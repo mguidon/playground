@@ -1,0 +1,17 @@
+version: '3.4'
+services:
+  test_stack:
+    image: test_stack
+    command: python3 run.py
+    extra_hosts:
+      - "predator.osparc.io:192.168.186.1"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      placement:
+        constraints:
+          - node.platform.os == linux
+          - node.role == manager
+    environment:
+      - EXTRA_HOSTS_POSTFIX=osparc.io
+
