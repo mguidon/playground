@@ -1,0 +1,45 @@
+# glxgears
+# ftp://www.x.org/pub/X11R6.8.1/doc/glxgears.1.html
+
+# docker build -t glxgears .
+# xhost +si:localuser:root
+# docker run --runtime=nvidia -ti --rm -e DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix glxgears
+
+
+FROM nvidia/opengl:1.0-glvnd-devel-ubuntu18.04
+
+ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES},display
+ENV DEBIAN_FRONTEND=noninteractive
+
+#RUN apt-get update && apt-get install -y --no-install-recommends \
+#        mesa-utils && \
+#    rm -rf /var/lib/apt/lists/*
+
+#CMD ["glxgears", "-info"]
+
+
+RUN apt-get update && apt-get install -y --no-install-recommends libopencv-dev g++
+    
+    
+RUN mkdir /work    
+COPY egl.cpp egl.cpp
+RUN g++ egl.cpp -lGL -lEGL `pkg-config --cflags --libs opencv` -o offscreen
+
+RUN apt-get install -y curl
+
+ARG VIRTUALGL_VERSION=2.5.2
+ARG LIBJPEG_VERSION=1.5.2
+
+
+RUN cd /tmp && \
+    curl -fsSL -O https://svwh.dl.sourceforge.net/project/virtualgl/${VIRTUALGL_VERSION}/virtualgl_${VIRTUALGL_VERSION}_amd64.deb \
+        -O https://svwh.dl.sourceforge.net/project/virtualgl/${VIRTUALGL_VERSION}/virtualgl32_${VIRTUALGL_VERSION}_amd64.deb && \
+    dpkg -i *.deb && \
+    rm -f /tmp/*.deb
+
+ENV PATH ${PATH}:/opt/VirtualGL/bin:/
+
+RUN apt-get install -y xvfb libxv-dev mesa-utils
+
+ENV DISPLAY :0
+#ENTRYPOINT ["/usr/bin/Xvfb :0 -screen 0 1024x768x24&"]

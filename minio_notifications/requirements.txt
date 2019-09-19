@@ -1,0 +1,7 @@
+aiopg[sa]
+docker
+pika
+pytest
+pytest-docker
+requests
+sqlalchemy

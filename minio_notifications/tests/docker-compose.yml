@@ -1,0 +1,36 @@
+version: '3.4'
+services:
+  postgres:
+    image: postgres:10
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-minio_notifications}
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    ports:
+      - '5432:5432'
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 18080:8080
+    depends_on:
+      - postgres
+  minio:
+    image: minio/minio
+    environment:
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-12345678}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-12345678}
+    ports:
+      - "9001:9000"
+    command: --config-dir /config server /data
+    volumes:
+      - ./.config:/config/config.json
+  rabbit:
+    image: rabbitmq:3-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    ports:
+      - "15672:15672"
+      - "5672:5672"
